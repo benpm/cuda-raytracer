@@ -7,8 +7,6 @@
 #include <GL/glew.h>
 #undef GLFW_DLL
 #include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
-#include <glm/vec3.hpp>
 #include <renderer.hpp>
 
 #define TEX_W 1280

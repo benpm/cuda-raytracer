@@ -7,8 +7,11 @@ set(SOURCE "${CMAKE_SOURCE_DIR}/src")
 
 include_directories(${INCLUDE})
 add_executable(main
-    "${SOURCE}/main.cpp"
+    "${SOURCE}/main.cu"
     "${SOURCE}/renderer.cu"
+    "${SOURCE}/scene.cu"
+    "${SOURCE}/ray.cu"
+    "${SOURCE}/camera.cu"
 )
 
 # Use C++11 standards
