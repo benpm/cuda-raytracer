@@ -4,6 +4,7 @@
 #define GLM_FORCE_CUDA
 #include <scene.hpp>
 #include <camera.hpp>
+#include <helper.hpp>
 
 class Renderer {
 private:

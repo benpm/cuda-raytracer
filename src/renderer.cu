@@ -2,14 +2,12 @@
 #include <renderer.hpp>
 #include <time.h>
 
-//CUDA error checker macro
-#define catchErr(val) checkCUDA( (val), #val, __FILE__, __LINE__ )
-//Print CUDA error
-void checkCUDA(cudaError_t result, char const *const func, const char *const file, int const line);
 
 
 
-__global__ void _render(float* fb, uint width, uint height, const Scene* scene, const Camera* cam) {
+
+__global__ void _render(float* fb, uint width, uint height, 
+    const Scene* scene, const Camera* cam, const Sphere* volume) {
     const uint i = threadIdx.x + blockIdx.x * blockDim.x;
     const uint j = threadIdx.y + blockIdx.y * blockDim.y;
 
@@ -18,7 +16,9 @@ __global__ void _render(float* fb, uint width, uint height, const Scene* scene, 
     const uint pixel = (j * width + i) * 3;
     const glm::vec2 uv(float(i) / float(width), float(j) / float(height));
     const Ray ray = cam->ray(uv);
-    const glm::vec3 color = scene->colorAt(ray);
+    const glm::vec3 color = scene->colorAt(ray, volume);
+    // float t = volume->intersect(ray);
+    // const glm::vec3 color(t, t, t);
     fb[pixel + 0] = color.x;
     fb[pixel + 1] = color.y;
     fb[pixel + 2] = color.z;
@@ -49,11 +49,15 @@ void Renderer::render(float* dest) {
     Scene* _scene;
     catchErr(cudaMalloc((void**)&_scene, sizeof(Scene)));
     catchErr(cudaMemcpy(_scene, &this->scene, sizeof(Scene), cudaMemcpyHostToDevice));
+    Sphere* _volume;
+    Sphere sphere(glm::vec3(0, 0, -4), 1);
+    catchErr(cudaMalloc((void**)&_volume, sizeof(Sphere)));
+    catchErr(cudaMemcpy(_volume, &sphere, sizeof(Sphere), cudaMemcpyHostToDevice));
 
     //Render to framebuffer
     dim3 blocks(width / blockSize + 1, height / blockSize + 1);
     dim3 threads(blockSize, blockSize);
-    _render<<<blocks, threads>>>(framebuffer, width, height, _scene, _camera);
+    _render<<<blocks, threads>>>(framebuffer, width, height, _scene, _camera, _volume);
 
     //Catch errors, print time
     catchErr(cudaGetLastError());
@@ -72,14 +76,3 @@ void Renderer::render(float* dest) {
     catchErr(cudaFree(_scene));
 }
 
-void checkCUDA(cudaError_t result, char const *const func, 
-    const char *const file, int const line) {
-    if (result) {
-        std::cerr << "! CUDA ERROR: " << cudaGetErrorName(result) << std::endl;
-        std::cerr << "\t" << cudaGetErrorString(result) << std::endl;
-        std::cerr << "\tat " << file << ":" << line << " " << func << std::endl;
-        // Make sure we call CUDA Device Reset before exiting
-        cudaDeviceReset();
-        exit(99);
-    }
-}

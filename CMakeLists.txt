@@ -5,6 +5,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 set(INCLUDE "${CMAKE_SOURCE_DIR}/include")
 set(SOURCE "${CMAKE_SOURCE_DIR}/src")
 
+set(THRUST_DEVICE_SYSTEM THRUST_DEVICE_SYSTEM_CUDA)
+
 include_directories(${INCLUDE})
 add_executable(main
     "${SOURCE}/main.cu"
@@ -12,6 +14,8 @@ add_executable(main
     "${SOURCE}/scene.cu"
     "${SOURCE}/ray.cu"
     "${SOURCE}/camera.cu"
+    "${SOURCE}/volume.cu"
+    "${SOURCE}/helper.cu"
 )
 
 # Use C++11 standards

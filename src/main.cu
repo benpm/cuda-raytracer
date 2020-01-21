@@ -64,7 +64,9 @@ int main(int argc, char const *argv[]) {
     };
     
     //Compile shaders
-    GLuint programID = LoadShaders("../resource/shaders/default.vert", "../resource/shaders/default.frag");
+    GLuint programID = LoadShaders(
+		"../resource/shaders/default.vert", 
+		"../resource/shaders/default.frag");
     glUseProgram(programID);
     
     //Texture Data

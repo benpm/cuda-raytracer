@@ -3,6 +3,7 @@
 #include <cuda.h>
 #define GLM_FORCE_CUDA
 #include <glm/glm.hpp>
+#include <helper.hpp>
 
 class Ray {
 public:
