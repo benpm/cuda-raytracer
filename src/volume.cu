@@ -1,6 +1,6 @@
 #include <volume.hpp>
 
-Sphere::Sphere(const glm::vec3& pos, float radius) : radius(radius), pos(pos) {
+__device__ Sphere::Sphere(const glm::vec3& pos, float radius) : radius(radius), pos(pos) {
 }
 
 __device__ float Sphere::intersect(const Ray& ray) const {

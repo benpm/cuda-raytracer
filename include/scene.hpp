@@ -8,5 +8,5 @@
 class Scene {
 public:
     __host__ __device__ Scene();
-    __device__ glm::vec3 colorAt(const Ray& ray, const Sphere* volume) const;
+    __device__ glm::vec3 colorAt(const Ray& ray, Volume** volumes, size_t nvolumes) const;
 };
