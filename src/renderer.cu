@@ -1,4 +1,5 @@
 #include <iostream>
+#include <curand_kernel.h>
 #include <renderer.hpp>
 #include <time.h>
 
@@ -12,17 +13,36 @@ __global__ void _construct(Scene* scene) {
     }
 }
 
+__global__ void _render_init(uint width, uint height, curandState *randState) {
+    const uint i = threadIdx.x + blockIdx.x * blockDim.x;
+    const uint j = threadIdx.y + blockIdx.y * blockDim.y;
+
+    if (i >= width || j >= height) return;
+
+    const uint pixel = j * width + i;
+
+    //Each thread gets same seed, a different sequence number, no offset
+    curand_init(1234, pixel, 0, &randState[pixel]);
+}
+
 __global__ void _render(float* fb, uint width, uint height, 
-    const Scene* scene, const Camera* cam) {
+    const Scene* scene, const Camera* cam, curandState *randState) {
     const uint i = threadIdx.x + blockIdx.x * blockDim.x;
     const uint j = threadIdx.y + blockIdx.y * blockDim.y;
 
     if (i >= width || j >= height) return;
 
     const uint pixel = (j * width + i) * 3;
-    const glm::vec2 uv(float(i) / float(width), float(j) / float(height));
-    const Ray ray = cam->ray(uv);
-    const glm::vec3 color = scene->colorAt(ray);
+    curandState localRandState = randState[pixel];
+    glm::vec3 color(0, 0, 0);
+    for (uint s = 0; s < cam->samplesPerPixel; ++s) {
+        const glm::vec2 uv(
+            (float(i) + curand_uniform(&localRandState)) / float(width), 
+            (float(j) + curand_uniform(&localRandState)) / float(height));
+        const Ray ray = cam->ray(uv);
+        color += scene->colorAt(ray);
+    }
+    color /= float(cam->samplesPerPixel);
     fb[pixel + 0] = color.x;
     fb[pixel + 1] = color.y;
     fb[pixel + 2] = color.z;
@@ -45,6 +65,10 @@ void Renderer::render(float* dest) {
     //Timing clock
     clock_t start, stop;
     start = clock();
+
+    //CUDA Random state
+    curandState* randState;
+    catchErr(cudaMalloc((void**)&randState, width * height * sizeof(curandState)));
     
     //Construct scene
     Scene scene(3);
@@ -63,11 +87,15 @@ void Renderer::render(float* dest) {
     //Render to framebuffer
     dim3 blocks(width / blockSize + 1, height / blockSize + 1);
     dim3 threads(blockSize, blockSize);
-    _render<<<blocks, threads>>>(framebuffer, width, height, _scene, _camera);
 
-    //Catch errors, print time
+    _render_init<<<blocks, threads>>>(width, height, randState);
     catchErr(cudaGetLastError());
     catchErr(cudaDeviceSynchronize());
+
+    _render<<<blocks, threads>>>(framebuffer, width, height, _scene, _camera, randState);
+    catchErr(cudaGetLastError());
+    catchErr(cudaDeviceSynchronize());
+
     stop = clock();
     double seconds = ((double)(stop - start)) / CLOCKS_PER_SEC;
     printf("Finished in %lf seconds\n", seconds);
