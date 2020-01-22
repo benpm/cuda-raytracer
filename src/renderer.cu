@@ -4,16 +4,16 @@
 
 
 
-__global__ void _construct(Volume** volumes) {
+__global__ void _construct(Scene* scene) {
     if (threadIdx.x == 0 && blockIdx.x == 0) {
-        volumes[1] = new Sphere(glm::vec3(-2, 0, -4), 0.5);
-        volumes[0] = new Sphere(glm::vec3(0, 0, -4), 0.75);
-        volumes[2] = new Sphere(glm::vec3(2, 0, -4), 1);
+        scene->volumes[0] = new Sphere(glm::vec3(-2, 0, -4), 0.5);
+        scene->volumes[1] = new Sphere(glm::vec3(0, 0, -4), 0.75);
+        scene->volumes[2] = new Sphere(glm::vec3(2, 0, -4), 1);
     }
 }
 
 __global__ void _render(float* fb, uint width, uint height, 
-    const Scene* scene, const Camera* cam, Volume** volumes, size_t nvolumes) {
+    const Scene* scene, const Camera* cam) {
     const uint i = threadIdx.x + blockIdx.x * blockDim.x;
     const uint j = threadIdx.y + blockIdx.y * blockDim.y;
 
@@ -22,7 +22,7 @@ __global__ void _render(float* fb, uint width, uint height,
     const uint pixel = (j * width + i) * 3;
     const glm::vec2 uv(float(i) / float(width), float(j) / float(height));
     const Ray ray = cam->ray(uv);
-    const glm::vec3 color = scene->colorAt(ray, volumes, nvolumes);
+    const glm::vec3 color = scene->colorAt(ray);
     fb[pixel + 0] = color.x;
     fb[pixel + 1] = color.y;
     fb[pixel + 2] = color.z;
@@ -45,27 +45,25 @@ void Renderer::render(float* dest) {
     //Timing clock
     clock_t start, stop;
     start = clock();
+    
+    //Construct scene
+    Scene scene(3);
+    Scene* _scene;
+    catchErr(cudaMalloc((void**)&_scene, sizeof(Scene)));
+    catchErr(cudaMemcpy(_scene, &scene, sizeof(Scene), cudaMemcpyHostToDevice));
+    _construct<<<1, 1>>>(_scene);
+    catchErr(cudaGetLastError());
+    catchErr(cudaDeviceSynchronize());
 
     //Copy memory
     Camera* _camera;
     catchErr(cudaMalloc((void**)&_camera, sizeof(Camera)));
     catchErr(cudaMemcpy(_camera, &this->camera, sizeof(Camera), cudaMemcpyHostToDevice));
-    Scene* _scene;
-    catchErr(cudaMalloc((void**)&_scene, sizeof(Scene)));
-    catchErr(cudaMemcpy(_scene, &this->scene, sizeof(Scene), cudaMemcpyHostToDevice));
-    
-    //Construct scene
-    size_t nvolumes = 3;
-    Volume** _volumes;
-    catchErr(cudaMalloc((void**)&_volumes, nvolumes * sizeof(Volume *)));
-    _construct<<<1, 1>>>(_volumes);
-    catchErr(cudaGetLastError());
-    catchErr(cudaDeviceSynchronize());
 
     //Render to framebuffer
     dim3 blocks(width / blockSize + 1, height / blockSize + 1);
     dim3 threads(blockSize, blockSize);
-    _render<<<blocks, threads>>>(framebuffer, width, height, _scene, _camera, _volumes, nvolumes);
+    _render<<<blocks, threads>>>(framebuffer, width, height, _scene, _camera);
 
     //Catch errors, print time
     catchErr(cudaGetLastError());

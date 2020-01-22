@@ -14,7 +14,6 @@ public:
     const uint height;
     const uint framebufferLen;
 
-    Scene scene;
     Camera camera;
 
     Renderer(const uint width, const uint height);

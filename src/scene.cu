@@ -1,10 +1,12 @@
 #include <scene.hpp>
 
-Scene::Scene() {}
+Scene::Scene(size_t capacity) : capacity(capacity) {
+    catchErr(cudaMalloc((void**)&this->volumes, capacity * sizeof(Volume *)));
+}
 
-__device__ glm::vec3 Scene::colorAt(const Ray& ray, Volume** volumes, size_t nvolumes) const {
+__device__ glm::vec3 Scene::colorAt(const Ray& ray) const {
     Hit hit;
-    for (size_t i = 0; i < nvolumes; ++i) {
+    for (size_t i = 0; i < capacity; ++i) {
         if (volumes[i]->intersect(ray, hit)) {
             return 0.5f * (hit.normal + glm::vec3(1, 1, 1));
         }
