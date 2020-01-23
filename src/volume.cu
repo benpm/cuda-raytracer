@@ -32,9 +32,9 @@ __device__ Plane::Plane(float height) : height(height) {
 }
 
 __device__ bool Plane::intersect(const Ray& ray, Hit& hit) const {
-    hit.t = (height - ray.a.y) / ray.b.y;
-    if (hit.t > 0) {
-        hit.t = -ray.a.y / ray.b.y;
+    float t = (height - ray.a.y) / ray.b.y;
+    if (t > 0) {
+        hit.t = t;
         hit.point = ray.pointAtTime(hit.t);
         hit.normal = glm::vec3(0, 1, 0);
         return true;

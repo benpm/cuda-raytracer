@@ -41,7 +41,7 @@ __global__ void _render(float* fb, uint width, uint height,
             (float(i) + curand_uniform(&localRandState)) / float(width), 
             (float(j) + curand_uniform(&localRandState)) / float(height));
         const Ray ray = cam->ray(uv);
-        color += scene->colorAt(ray);
+        color += scene->colorAt(ray, randState);
     }
     color /= float(cam->samplesPerPixel);
     fb[pixel + 0] = color.x;

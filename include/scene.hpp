@@ -2,8 +2,7 @@
 
 #include <vector>
 #include <volume.hpp>
-#include <thrust/host_vector.h>
-#include <thrust/device_vector.h>
+#include <curand_kernel.h>
 
 class Scene {
 public:
@@ -11,5 +10,5 @@ public:
     size_t capacity;
 
     __host__ Scene(size_t capacity);
-    __device__ glm::vec3 colorAt(const Ray& ray) const;
+    __device__ glm::vec3 colorAt(const Ray& ray, curandState *randState) const;
 };

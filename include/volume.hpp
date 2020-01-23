@@ -3,7 +3,7 @@
 #include <ray.hpp>
 
 struct Hit {
-    float t;
+    float t = 0;
     glm::vec3 point;
     glm::vec3 normal;
 };
