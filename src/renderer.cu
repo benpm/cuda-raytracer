@@ -20,10 +20,10 @@ __global__ void _render_init(uint width, uint height, curandState *randState) {
 
     if (i >= width || j >= height) return;
 
-    const uint pixel = j * width + i;
+    const uint pixel = (j * width + i) * 3;
 
     //Each thread gets same seed, a different sequence number, no offset
-    curand_init(1234, pixel, 0, &randState[pixel]);
+    curand_init(4321, pixel, 0, &randState[pixel]);
 }
 
 __global__ void _render(float* fb, uint width, uint height, 
@@ -51,7 +51,7 @@ __global__ void _render(float* fb, uint width, uint height,
 
 Renderer::Renderer(const uint width, const uint height) :
     width(width), height(height), framebufferLen(width * height * sizeof(float) * 3),
-    camera(glm::vec3(0, 0, 0), float(width) / float(height), 1.0f) {
+    camera(glm::vec3(0, -0.2f, 0), float(width) / float(height), 1.0f) {
     catchErr(cudaMallocManaged((void **)&framebuffer, framebufferLen));
 }
 
@@ -61,7 +61,7 @@ Renderer::~Renderer() {
 
 void Renderer::render(float* dest) {
     printf("Rendering %ux%u image...\n", width, height);
-    const uint blockSize = 16;
+    const uint blockSize = 32;
 
     //Timing clock
     clock_t start, stop;
