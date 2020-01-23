@@ -1,12 +1,12 @@
 # CUDA Raytracer
 A simple raytracer using CUDA and OpenGL. Raytracing is performed by a CUDA kernel,
-and drawing is done with OpenGL.
+and drawing is done with OpenGL. Adapted from ["Accelerated Ray Tracing in One Weekend in CUDA"](https://devblogs.nvidia.com/accelerated-ray-tracing-cuda/).
 
 ![Screenshot](screenshot.png)
 
 ## Features
 - Diffuse lighting
-- Matte material
+- Matte material, metallic (reflective) material
 - Planes and spheres
 
 ## Dependencies
