@@ -9,17 +9,21 @@ __global__ void _construct(Scene* scene) {
     if (threadIdx.x == 0 && blockIdx.x == 0) {
         Material* matteA = new MatteMaterial(glm::vec3(0.5f, 1, 0.7f));
         Material* matteB = new MatteMaterial(glm::vec3(1, 1, 1));
-        Material* metallicA = new MetallicMaterial(glm::vec3(0.8f, 0.9f, 1.0f), 0.3f);
+        Material* metallicA = new MetallicMaterial(glm::vec3(0.8f, 0.9f, 1.0f), 0.05f);
         Material* metallicB = new MetallicMaterial(glm::vec3(1, 1, 1), 0.0f);
+        Material* dielectricA = new DielectricMaterial(glm::vec3(0.3f, 0.3f, 1.0f), 0.0f, 1.3f);
+        Material* dielectricB = new DielectricMaterial(glm::vec3(1, 1, 1), 0.0f, 1.3f);
         Material* test = new TestMaterial();
 
         scene->volumes[0] = new Sphere(metallicA, glm::vec3(-2, 0, -4), 0.5);
-        scene->volumes[1] = new Sphere(metallicB, glm::vec3(0, 0, -8), 0.75);
+        scene->volumes[1] = new Sphere(dielectricA, glm::vec3(0, 0, -8), 0.75);
         scene->volumes[2] = new Sphere(matteA, glm::vec3(2, 0, -4), 1);
         scene->volumes[3] = new Sphere(metallicB, glm::vec3(-0.2, 2, -8), 1);
         scene->volumes[4] = new Plane(matteB, -1);
-        scene->volumes[5] = new Sphere(metallicB, glm::vec3(-4, 0, -32), 16);
-        scene->volumes[6] = new Sphere(metallicB, glm::vec3(4, 0, 32), 16);
+        scene->volumes[5] = new Sphere(metallicB, glm::vec3(-8, 0, -32), 8);
+        scene->volumes[6] = new Sphere(metallicB, glm::vec3(8, 0, 32), 16);
+        scene->volumes[7] = new Sphere(matteB, glm::vec3(-2, 0.2, -12), 1);
+        scene->volumes[8] = new Sphere(dielectricB, glm::vec3(0.2, -0.2, -2), 0.25);
     }
 }
 
@@ -81,7 +85,7 @@ void Renderer::render(float* dest) {
     catchErr(cudaMalloc((void**)&randState, width * height * sizeof(curandState)));
     
     //Construct scene
-    Scene scene(7);
+    Scene scene(9);
     Scene* _scene;
     catchErr(cudaMalloc((void**)&_scene, sizeof(Scene)));
     catchErr(cudaMemcpy(_scene, &scene, sizeof(Scene), cudaMemcpyHostToDevice));
