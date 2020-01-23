@@ -10,7 +10,7 @@
 #include <renderer.hpp>
 
 #define TEX_W 1280
-#define TEX_H 736
+#define TEX_H 720
 #define TEX_SIZE (TEX_W * TEX_H)
 
 //Exit safely, closing GLFW nicely

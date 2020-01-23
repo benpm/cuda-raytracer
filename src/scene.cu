@@ -7,7 +7,7 @@ Scene::Scene(size_t capacity) : capacity(capacity) {
 
 __device__ glm::vec3 Scene::colorAt(const Ray& ray, curandState *randState) const {
     Ray r = ray;
-    float energy = 1;
+    glm::vec3 energy(1, 1, 1);
     for (size_t b = 0; b < 32; ++b) {
         //Find closest hit
         float closest = FLT_MAX;
@@ -26,8 +26,7 @@ __device__ glm::vec3 Scene::colorAt(const Ray& ray, curandState *randState) cons
 
         //Bounce if hit
         if (hit.t > 0) {
-            // glm::vec3 bounceOut = reflect(glm::normalize(r.b), hit.normal);
-            energy = mat->hit(hit, r, energy, randState);
+            mat->hit(hit, r, energy, randState);
         }
         
         //...or we return with sky color
