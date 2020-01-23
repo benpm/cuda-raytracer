@@ -10,7 +10,7 @@ __global__ void _construct(Scene* scene) {
         scene->volumes[0] = new Sphere(glm::vec3(-2, 0, -4), 0.5);
         scene->volumes[1] = new Sphere(glm::vec3(0, 0, -8), 0.75);
         scene->volumes[2] = new Sphere(glm::vec3(2, 0, -4), 1);
-        scene->volumes[3] = new Plane(-2);
+        scene->volumes[3] = new Plane(-1);
     }
 }
 
@@ -41,12 +41,12 @@ __global__ void _render(float* fb, uint width, uint height,
             (float(i) + curand_uniform(&localRandState)) / float(width), 
             (float(j) + curand_uniform(&localRandState)) / float(height));
         const Ray ray = cam->ray(uv);
-        color += scene->colorAt(ray, randState);
+        color += scene->colorAt(ray, &localRandState);
     }
     color /= float(cam->samplesPerPixel);
-    fb[pixel + 0] = color.x;
-    fb[pixel + 1] = color.y;
-    fb[pixel + 2] = color.z;
+    fb[pixel + 0] = sqrt(color.x);
+    fb[pixel + 1] = sqrt(color.y);
+    fb[pixel + 2] = sqrt(color.z);
 }
 
 Renderer::Renderer(const uint width, const uint height) :
