@@ -16,6 +16,7 @@ add_executable(main
     "${SOURCE}/camera.cu"
     "${SOURCE}/volume.cu"
     "${SOURCE}/helper.cu"
+    "${SOURCE}/material.cu"
 )
 
 # Use C++11 standards

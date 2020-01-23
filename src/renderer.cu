@@ -7,10 +7,11 @@
 
 __global__ void _construct(Scene* scene) {
     if (threadIdx.x == 0 && blockIdx.x == 0) {
-        scene->volumes[0] = new Sphere(glm::vec3(-2, 0, -4), 0.5);
-        scene->volumes[1] = new Sphere(glm::vec3(0, 0, -8), 0.75);
-        scene->volumes[2] = new Sphere(glm::vec3(2, 0, -4), 1);
-        scene->volumes[3] = new Plane(-1);
+        Material* matte = new MatteMaterial(glm::vec3(1, 1, 1));
+        scene->volumes[0] = new Sphere(matte, glm::vec3(-2, 0, -4), 0.5);
+        scene->volumes[1] = new Sphere(matte, glm::vec3(0, 0, -8), 0.75);
+        scene->volumes[2] = new Sphere(matte, glm::vec3(2, 0, -4), 1);
+        scene->volumes[3] = new Plane(matte, -1);
     }
 }
 

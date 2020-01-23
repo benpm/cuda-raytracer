@@ -1,18 +1,5 @@
 #include <scene.hpp>
 
-#define RANDVEC3(R) glm::vec3(curand_uniform((R)),curand_uniform((R)),curand_uniform((R)))
-
-__device__ glm::vec3 randVecUnitSphere(curandState *randState) {
-    glm::vec3 point;
-    do {
-        point = 2.0f * RANDVEC3(randState) - glm::vec3(1, 1, 1);
-    } while (glm::dot(point, point) >= 1.0f);
-    return point;
-}
-
-__device__ glm::vec3 reflect(const glm::vec3 &a, const glm::vec3 &b) {
-    return a - 2.0f * glm::dot(a, b) * b;
-}
 
 Scene::Scene(size_t capacity) : capacity(capacity) {
     catchErr(cudaMalloc((void**)&this->volumes, capacity * sizeof(Volume *)));
@@ -25,12 +12,14 @@ __device__ glm::vec3 Scene::colorAt(const Ray& ray, curandState *randState) cons
         //Find closest hit
         float closest = FLT_MAX;
         Hit hit;
+        Material* mat;
         for (size_t i = 0; i < capacity; ++i) {
             Hit _hit;
             if (volumes[i]->intersect(r, 0.001f, closest, _hit)) {
                 if (_hit.t < closest) {
                     hit = _hit;
                     closest = _hit.t;
+                    mat = volumes[i]->getMat();
                 }
             }
         }
@@ -38,10 +27,7 @@ __device__ glm::vec3 Scene::colorAt(const Ray& ray, curandState *randState) cons
         //Bounce if hit
         if (hit.t > 0) {
             // glm::vec3 bounceOut = reflect(glm::normalize(r.b), hit.normal);
-            glm::vec3 bounceOut = hit.normal + randVecUnitSphere(randState);
-            energy *= 0.5f;
-            r.a = hit.point;
-            r.b = bounceOut;
+            energy = mat->hit(hit, r, energy, randState);
         }
         
         //...or we return with sky color

@@ -2,7 +2,8 @@
 
 #define T_MIN 0.001f
 
-__device__ Sphere::Sphere(const glm::vec3& pos, float radius) : radius(radius), pos(pos) {
+__device__ Sphere::Sphere(Material* mat, const glm::vec3& pos, float radius)
+    : radius(radius), pos(pos), mat(mat) {
 }
 
 __device__ bool Sphere::intersect(const Ray& ray, float minT, float maxT, Hit& hit) const {
@@ -30,7 +31,12 @@ __device__ bool Sphere::intersect(const Ray& ray, float minT, float maxT, Hit& h
     return false;
 }
 
-__device__ Plane::Plane(float height) : height(height) {
+__device__ Material* Sphere::getMat() const {
+    return this->mat;
+}
+
+__device__ Plane::Plane(Material* mat, float height)
+    : height(height), mat(mat) {
 }
 
 __device__ bool Plane::intersect(const Ray& ray, float minT, float maxT, Hit& hit) const {
@@ -43,4 +49,8 @@ __device__ bool Plane::intersect(const Ray& ray, float minT, float maxT, Hit& hi
     }
 
     return false;
+}
+
+__device__ Material* Plane::getMat() const {
+    return this->mat;
 }
