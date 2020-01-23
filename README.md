@@ -6,7 +6,7 @@ and drawing is done with OpenGL. Adapted from ["Accelerated Ray Tracing in One W
 
 ## Features
 - Diffuse lighting
-- Matte material, metallic (reflective) material
+- Matte material, metallic (reflective) material, dielectric (refractive) material
 - Planes and spheres
 
 ## Dependencies
