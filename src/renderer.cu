@@ -8,8 +8,9 @@
 __global__ void _construct(Scene* scene) {
     if (threadIdx.x == 0 && blockIdx.x == 0) {
         scene->volumes[0] = new Sphere(glm::vec3(-2, 0, -4), 0.5);
-        scene->volumes[1] = new Sphere(glm::vec3(0, 0, -4), 0.75);
+        scene->volumes[1] = new Sphere(glm::vec3(0, 0, -8), 0.75);
         scene->volumes[2] = new Sphere(glm::vec3(2, 0, -4), 1);
+        scene->volumes[3] = new Plane(-2);
     }
 }
 
@@ -71,10 +72,11 @@ void Renderer::render(float* dest) {
     catchErr(cudaMalloc((void**)&randState, width * height * sizeof(curandState)));
     
     //Construct scene
-    Scene scene(3);
+    Scene scene(4);
     Scene* _scene;
     catchErr(cudaMalloc((void**)&_scene, sizeof(Scene)));
     catchErr(cudaMemcpy(_scene, &scene, sizeof(Scene), cudaMemcpyHostToDevice));
+    puts("Constructing scene..");
     _construct<<<1, 1>>>(_scene);
     catchErr(cudaGetLastError());
     catchErr(cudaDeviceSynchronize());
@@ -88,10 +90,12 @@ void Renderer::render(float* dest) {
     dim3 blocks(width / blockSize + 1, height / blockSize + 1);
     dim3 threads(blockSize, blockSize);
 
+    puts("Initializing render...");
     _render_init<<<blocks, threads>>>(width, height, randState);
     catchErr(cudaGetLastError());
     catchErr(cudaDeviceSynchronize());
 
+    puts("Rendering...");
     _render<<<blocks, threads>>>(framebuffer, width, height, _scene, _camera, randState);
     catchErr(cudaGetLastError());
     catchErr(cudaDeviceSynchronize());

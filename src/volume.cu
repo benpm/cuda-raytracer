@@ -9,9 +9,7 @@ __device__ bool Sphere::intersect(const Ray& ray, Hit& hit) const {
     const float b = glm::dot(oc, ray.b);
     const float c = glm::dot(oc, oc) - radius * radius;
     const float discriminant = (b * b) - (a * c);
-    if (discriminant <= 0) {
-        return false;
-    } else {
+    if (discriminant > 0) {
         float t = (-b - sqrt(discriminant)) / a;
         if (t > 0) {
             hit.t = t;
@@ -27,5 +25,20 @@ __device__ bool Sphere::intersect(const Ray& ray, Hit& hit) const {
             return true;
         }
     }
+    return false;
+}
+
+__device__ Plane::Plane(float height) : height(height) {
+}
+
+__device__ bool Plane::intersect(const Ray& ray, Hit& hit) const {
+    hit.t = (height - ray.a.y) / ray.b.y;
+    if (hit.t > 0) {
+        hit.t = -ray.a.y / ray.b.y;
+        hit.point = ray.pointAtTime(hit.t);
+        hit.normal = glm::vec3(0, 1, 0);
+        return true;
+    }
+
     return false;
 }
