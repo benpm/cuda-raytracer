@@ -5,7 +5,9 @@ and drawing is done with OpenGL.
 ![Screenshot](screenshot.png)
 
 ## Features
-- Draws result to window
+- Diffuse lighting
+- Matte material
+- Planes and spheres
 
 ## Dependencies
 - CUDA 10
