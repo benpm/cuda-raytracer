@@ -19,3 +19,13 @@ __device__ float MetallicMaterial::hit(const Hit& hit, Ray& ray, float energy, c
     ray.a = hit.point;
     return energy * 0.95f;
 }
+
+
+__device__ TestMaterial::TestMaterial() {
+}
+
+__device__ float TestMaterial::hit(const Hit& hit, Ray& ray, float energy, curandState* randState) {
+    ray.b = ray.b + RANDVEC3(randState) * 0.05f;
+    ray.a = hit.point;
+    return energy * 0.95f;
+}

@@ -10,11 +10,13 @@ __global__ void _construct(Scene* scene) {
         Material* matte = new MatteMaterial(glm::vec3(1, 1, 1));
         Material* metallicA = new MetallicMaterial(glm::vec3(1, 1, 1), 0.3f);
         Material* metallicB = new MetallicMaterial(glm::vec3(1, 1, 1), 0.0f);
+        Material* test = new TestMaterial();
 
         scene->volumes[0] = new Sphere(metallicA, glm::vec3(-2, 0, -4), 0.5);
         scene->volumes[1] = new Sphere(metallicB, glm::vec3(0, 0, -8), 0.75);
         scene->volumes[2] = new Sphere(matte, glm::vec3(2, 0, -4), 1);
-        scene->volumes[3] = new Plane(matte, -1);
+        scene->volumes[3] = new Sphere(metallicB, glm::vec3(-0.2, 2, -8), 1);
+        scene->volumes[4] = new Plane(matte, -1);
     }
 }
 
@@ -76,7 +78,7 @@ void Renderer::render(float* dest) {
     catchErr(cudaMalloc((void**)&randState, width * height * sizeof(curandState)));
     
     //Construct scene
-    Scene scene(4);
+    Scene scene(5);
     Scene* _scene;
     catchErr(cudaMalloc((void**)&_scene, sizeof(Scene)));
     catchErr(cudaMemcpy(_scene, &scene, sizeof(Scene), cudaMemcpyHostToDevice));

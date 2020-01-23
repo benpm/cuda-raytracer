@@ -27,3 +27,9 @@ public:
     __device__ MetallicMaterial(glm::vec3 color, float roughness);
     __device__ virtual float hit(const Hit& hit, Ray& ray, float energy, curandState* randState);
 };
+
+class TestMaterial : public Material {
+public:
+    __device__ TestMaterial();
+    __device__ virtual float hit(const Hit& hit, Ray& ray, float energy, curandState* randState);
+};
